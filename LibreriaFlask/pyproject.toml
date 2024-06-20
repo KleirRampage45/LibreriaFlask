@@ -1,0 +1,12 @@
+[tool]
+[tool.poetry]
+authors = ["Gerson Gaete <gersongaete@gmail.com>"]
+authors = ["Jose Estigarribia <asd@gmail.com>"]
+authors = ["Matias Ramirez <asd@gmail.com>"]
+authors = ["Jose Fretes <asd@gmail.com>"]
+name = "Libreria"
+version = "1.0.0"
+description="Proyecto realizado para el tercer parcial de Programacion Web"
+[tool.poetry.dependencies]
+flask = "==1.0.2"
+python = "^3.8"

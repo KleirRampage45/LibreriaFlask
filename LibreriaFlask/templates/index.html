@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        p {
+            text-align: center;
+            color: #666;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        li a {
+            color: #007BFF;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        li a:hover {
+            text-decoration: underline;
+        }
+        .add-book {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .add-book:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Library</h1>
+        {% if books == [] %}
+        <p><strong>Library is Empty</strong></p>
+        {% else %}
+        <ul>
+            {% for book in books %}
+            <li>
+                <strong>
+                    <a href="{{ url_for('delete_book', id=book.id) }}">Delete Book</a>
+                    {{ book }}
+                    <a href="{{ url_for('edit_rating', id=book.id) }}">Edit Rating</a>
+                </strong>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <a class="add-book" href="{{ url_for('add') }}">Add New Book</a>
+    </div>
+</body>
+</html>
