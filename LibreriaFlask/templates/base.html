@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Biblioteca{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+        .sidebar .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+        #main {
+            transition: margin-left 0.5s;
+            padding: 16px;
+            margin-left: 250px;
+        }
+        .open-btn {
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #111;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 10px;
+            text-decoration: none;
+            color: white;
+            border-radius: 4px;
+            display: inline-block;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-black {
+            background-color: #343a40;
+        }
+        .btn-black:hover {
+            background-color: #23272b;
+        }
+        .container {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
+    <a href="{{ url_for('biblioteca') }}">Biblioteca</a>
+    <a href="{{ url_for('loans') }}">Préstamos</a>
+    {% if session['profile'] == 'Administrador' %}
+        <a href="{{ url_for('add') }}">Agregar Libro</a>
+        <a href="{{ url_for('register_author') }}">Registrar Autor</a>
+        <a href="{{ url_for('register') }}">Registrar Usuario</a>
+    {% endif %}
+    <a href="{{ url_for('view_reviews', book_id=1) }}">Reseñas</a>
+    <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
+</div>
+
+<div id="main">
+    <button class="open-btn" onclick="openNav()">☰</button>
+    {% block content %}{% endblock %}
+</div>
+
+<script>
+    function openNav() {
+        document.getElementById("sidebar").style.display = "block";
+        document.getElementById("main").style.marginLeft = "250px";
+    }
+
+    function closeNav() {
+        document.getElementById("sidebar").style.display = "none";
+        document.getElementById("main").style.marginLeft = "0";
+    }
+</script>
+
+</body>
+</html>

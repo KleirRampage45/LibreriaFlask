@@ -1,76 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Rating</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 20px 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        h3 {
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .form-group input:focus {
-            border-color: #007BFF;
-            outline: none;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            background-color: #007BFF;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h3>Book Title: {{ book.title }}</h3>
-        <h3>Current Rating: {{ book.rating }}</h3>
-        <form action="{{ url_for('edit_rating', id=book_id) }}" method="post">
-            <div class="form-group">
-                <label for="new_rating">New Rating</label>
-                <input type="text" id="new_rating" name="new_rating" required>
-            </div>
-            <button type="submit">Change Rating</button>
-        </form>
-    </div>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Editar Libro{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Editar Libro</h1>
+    <form method="POST">
+        <label for="title">Título</label>
+        <input type="text" id="title" name="title" value="{{ book.title }}" required>
+
+        <label for="author">Autor</label>
+        <select id="author" name="author">
+            {% for author in authors %}
+            <option value="{{ author.id }}" {% if author.id == book.author_id %}selected{% endif %}>{{ author.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="genre">Género</label>
+        <select id="genre" name="genre">
+            {% for genre in genres %}
+            <option value="{{ genre.id }}" {% if genre.id == book.genre_id %}selected{% endif %}>{{ genre.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="rating">Calificación</label>
+        <input type="text" id="rating" name="rating" value="{{ book.rating }}" required>
+
+        <label for="year">Año</label>
+        <input type="text" id="year" name="year" value="{{ book.year }}" required>
+
+        <label for="publisher">Editorial</label>
+        <input type="text" id="publisher" name="publisher" value="{{ book.publisher.name }}" required>
+
+        <button type="submit" class="btn blue">Actualizar Libro</button>
+    </form>
+</div>
+<style>
+    .container {
+        max-width: 600px;
+        margin: auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+    label, input, select, button {
+        margin-bottom: 15px;
+    }
+    button {
+        align-self: flex-end;
+        padding: 10px 20px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer.
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Ver Reseñas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Reseñas para "{{ book.title }}"</h1>
+    {% if reviews %}
+    <ul>
+        {% for review in reviews %}
+        <li>
+            <strong>{{ review.user.username }}</strong>: {{ review.review }} ({{ review.rating }}/10)
+            <br><small>{{ review.timestamp }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No hay reseñas para este libro.</p>
+    {% endif %}
+</div>
+{% endblock %}

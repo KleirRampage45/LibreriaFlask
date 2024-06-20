@@ -1,79 +1,331 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///new-books-collection.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///biblioteca.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'supersecretkey'  # Cambia esto por una clave secreta más segura
 db = SQLAlchemy(app)
 
-# CREAR TABLA
-
-class books(db.Model):
+class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), unique=True, nullable=False)
-    author = db.Column(db.String(250), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
+    genre_id = db.Column(db.Integer, db.ForeignKey('genre.id'), nullable=False)
     rating = db.Column(db.String(250), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    publisher_id = db.Column(db.Integer, db.ForeignKey('publisher.id'), nullable=False)
+    publisher = db.relationship('Publisher', backref='published_books')
 
-    def __repr__(self):
-        return f'{self.title} - {self.author} - {self.rating}/10'
+class BookReview(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    review = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    book = db.relationship('Book', backref='reviews')
+    user = db.relationship('User', backref='reviews')
+
+class Author(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), unique=True, nullable=False)
+    nationality = db.Column(db.String(250), nullable=False)
+    birth_date = db.Column(db.Date, nullable=False)
+    gender = db.Column(db.String(50), nullable=False)
+    genre_id = db.Column(db.Integer, db.ForeignKey('genre.id'), nullable=False)
+    book_count = db.Column(db.Integer, default=0)
+    books = db.relationship('Book', backref='author', lazy=True)
+
+class Genre(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), unique=True, nullable=False)
+    books = db.relationship('Book', backref='genre', lazy=True)
+    authors = db.relationship('Author', backref='genre', lazy=True)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+    profile = db.Column(db.String(50), nullable=False)
+    loans = db.relationship('Loan', backref='user', lazy=True)
+
+class Loan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    loan_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    return_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+
+    def __init__(self, book_id, user_id, return_date):
+        self.book_id = book_id
+        self.user_id = user_id
+        self.loan_date = datetime.utcnow()
+        self.return_date = return_date
+        self.status = "A tiempo" if return_date >= datetime.utcnow() else "Vencido"
+
+class Publisher(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), unique=True, nullable=False)
 
 # Crear todas las tablas definidas en la base de datos
 db.create_all()
 
+# Agregar el usuario inicial
+if not User.query.filter_by(username='admin').first():
+    admin_user = User(username='admin', email='estigarribiajose064@gmail.com', password='password', profile='Administrador')
+    db.session.add(admin_user)
+    db.session.commit()
+
+# Agregar géneros literarios por defecto
+default_genres = [
+    'Novela', 'Cuento', 'Poesía', 'Ensayo', 'Teatro', 'Ciencia Ficción', 'Fantasía',
+    'Terror', 'Misterio', 'Romance', 'Aventura', 'Biografía', 'Autobiografía', 'Crónica',
+    'Diario', 'Memorias', 'Fábula', 'Leyenda', 'Mitología', 'Sátira'
+]
+for genre_name in default_genres:
+    if not Genre.query.filter_by(name=genre_name).first():
+        new_genre = Genre(name=genre_name)
+        db.session.add(new_genre)
+db.session.commit()
+
+# Agregar un libro por defecto si no hay libros
+if not Book.query.first():
+    # Crear o obtener un autor por defecto
+    default_author = Author.query.filter_by(name='Autor Desconocido').first()
+    if not default_author:
+        default_author = Author(name='Autor Desconocido', nationality='Desconocida', birth_date=datetime(1970, 1, 1), gender='Desconocido', genre_id=1)
+        db.session.add(default_author)
+        db.session.commit()
+
+    # Crear o obtener una editorial por defecto
+    default_publisher = Publisher.query.filter_by(name='Editorial Desconocida').first()
+    if not default_publisher:
+        default_publisher = Publisher(name='Editorial Desconocida')
+        db.session.add(default_publisher)
+        db.session.commit()
+
+    # Crear el libro por defecto
+    default_book = Book(
+        title='Libro de Ejemplo',
+        author_id=default_author.id,
+        genre_id=1,  # Asumiendo que el primer género es 'Novela'
+        rating='5',
+        year=2000,
+        publisher_id=default_publisher.id
+    )
+    db.session.add(default_book)
+    db.session.commit()
+
 @app.route('/')
 def home():
-    # Obtener todos los libros de la base de datos
-    all_books_in_database = db.session.query(books).all()
-    # Renderizar la plantilla "index.html" pasando la lista de libros
-    return render_template("index.html", books=all_books_in_database)
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        if user.profile == 'Administrador':
+            return render_template("inicio.html", user=user)
+        else:
+            return redirect(url_for('inicio_lectura'))
+    return redirect(url_for('login'))
+
+@app.route('/inicio_lectura')
+def inicio_lectura():
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        if user.profile == 'Lectura':
+            return render_template("inicio_lectura.html")
+    return redirect(url_for('home'))
+
+@app.route('/biblioteca')
+def biblioteca():
+    if 'user_id' in session:
+        search_query = request.args.get('search')
+        if search_query:
+            all_books = Book.query.filter(Book.title.contains(search_query)).all()
+        else:
+            all_books = Book.query.all()
+        return render_template("index.html", books=all_books)
+    return redirect(url_for('login'))
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
+    if 'user_id' not in session or User.query.get(session['user_id']).profile != 'Administrador':
+        return redirect(url_for('login'))
     if request.method == "POST":
-        # Recoger los datos del formulario (que estarán en forma de diccionario)
-        data = request.form
-
-        # Crear una nueva fila en la base de datos creando un objeto de la clase 'books'
-        new_book = books(title=data['title'], author=data['author'], rating=data['rating'])
-
-        # Agregar el libro a la base de datos
+        title = request.form['title']
+        author_id = request.form['author']
+        genre_id = request.form['genre']
+        rating = request.form['rating']
+        year = request.form['year']
+        publisher_name = request.form['publisher']
+        
+        publisher = Publisher.query.filter_by(name=publisher_name).first()
+        if not publisher:
+            publisher = Publisher(name=publisher_name)
+            db.session.add(publisher)
+        
+        new_book = Book(title=title, author_id=author_id, genre_id=genre_id, rating=rating, year=year, publisher=publisher)
         db.session.add(new_book)
         db.session.commit()
 
-        # Redirigir a la página principal
+        # Actualizar la cantidad de libros del autor
+        author = Author.query.get(author_id)
+        author.book_count = Book.query.filter_by(author_id=author_id).count()
+        db.session.commit()
+
         return redirect(url_for('home'))
-    # Renderizar la plantilla "add.html" para mostrar el formulario
-    return render_template("add.html")
+    
+    authors = Author.query.all()
+    genres = Genre.query.all()
+    return render_template("add.html", authors=authors, genres=genres)
 
 @app.route('/edit/<int:id>', methods=["GET", "POST"])
-def edit_rating(id):
+def edit_book(id):
+    if 'user_id' not in session or User.query.get(session['user_id']).profile != 'Administrador':
+        return redirect(url_for('login'))
+    book = Book.query.get(id)
     if request.method == "POST":
-        # Obtener el libro por su ID
-        book_id = id
-        book_to_update = books.query.get(book_id)
-        print(book_to_update)
-        # Actualizar la calificación del libro
-        book_to_update.rating = request.form["new_rating"]
+        book.title = request.form["title"]
+        book.author_id = request.form["author"]
+        book.genre_id = request.form["genre"]
+        book.rating = request.form["rating"]
+        book.year = request.form["year"]
+        book.publisher = Publisher.query.filter_by(name=request.form["publisher"]).first()
         db.session.commit()
-        # Redirigir a la página principal
+
+        # Actualizar la cantidad de libros del autor
+        author = Author.query.get(book.author_id)
+        author.book_count = Book.query.filter_by(author_id=book.author_id).count()
+        db.session.commit()
+
         return redirect(url_for('home'))
-    # Obtener el libro por su ID para mostrar los detalles actuales en el formulario
-    book = books.query.get(id)
-    # Renderizar la plantilla "edit.html" pasando los datos del libro
-    return render_template("edit.html", book_id=id, book=book)
+    
+    authors = Author.query.all()
+    genres = Genre.query.all()
+    return render_template("edit.html", book=book, authors=authors, genres=genres)
 
 @app.route('/delete/<int:id>')
 def delete_book(id):
-    # Obtener el libro por su ID
-    book_id = id
-    book_to_delete = books.query.get(book_id)
-    # Eliminar el libro de la base de datos
-    db.session.delete(book_to_delete)
+    if 'user_id' not in session or User.query.get(session['user_id']).profile != 'Administrador':
+        return redirect(url_for('login'))
+    book = Book.query.get(id)
+    db.session.delete(book)
     db.session.commit()
-    # Redirigir a la página principal
+
+    # Actualizar la cantidad de libros del autor
+    author = Author.query.get(book.author_id)
+    author.book_count = Book.query.filter_by(author_id=book.author_id).count()
+    db.session.commit()
+
     return redirect(url_for('home'))
 
-if __name__ == "__main__":
-    # Ejecutar la aplicación en modo depuración
-    app.run(debug=True)
+@app.route('/register', methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        profile = request.form['profile']
+        new_user = User(username=username, email=email, password=password, profile=profile)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template("register.html")
 
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email, password=password).first()
+        if user:
+            session['user_id'] = user.id
+            session['profile'] = user.profile
+            return redirect(url_for('home'))
+        else:
+            return "Usuario o contraseña incorrectos"
+    return render_template("login.html")
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
+
+@app.route('/loan/<int:book_id>', methods=["GET", "POST"])
+def loan_book(book_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    book = Book.query.get(book_id)
+    if request.method == "POST":
+        return_date = datetime.strptime(request.form['return_date'], '%Y-%m-%d')
+        if return_date > datetime.utcnow() + timedelta(days=30):
+            return "La fecha de devolución no puede ser mayor a un mes desde hoy."
+        new_loan = Loan(book_id=book_id, user_id=session['user_id'], return_date=return_date)
+        db.session.add(new_loan)
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template("loan.html", book=book)
+
+@app.route('/loans')
+def loans():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    if user.profile == 'Administrador':
+        all_loans = Loan.query.all()
+    else:
+        all_loans = Loan.query.filter_by(user_id=user.id).all()
+    return render_template("loans.html", loans=all_loans)
+
+@app.route('/return_book/<int:loan_id>')
+def return_book(loan_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    loan = Loan.query.get(loan_id)
+    loan.status = 'Devuelto'
+    db.session.commit()
+    return redirect(url_for('loans'))
+
+@app.route('/register_author', methods=["GET", "POST"])
+def register_author():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if request.method == "POST":
+        name = request.form['name']
+        nationality = request.form['nationality']
+        birth_date = datetime.strptime(request.form['birth_date'], '%Y-%m-%d')
+        gender = request.form['gender']
+        genre_id = request.form['genre']
+        new_author = Author(name=name, nationality=nationality, birth_date=birth_date, gender=gender, genre_id=genre_id)
+        db.session.add(new_author)
+        db.session.commit()
+        return redirect(url_for('home'))
+    genres = Genre.query.all()
+    return render_template("register_author.html", genres=genres)
+
+@app.route('/add_review/<int:book_id>', methods=["GET", "POST"])
+def add_review(book_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    book = Book.query.get(book_id)
+    if request.method == "POST":
+        review_text = request.form['review']
+        rating = request.form['rating']
+        new_review = BookReview(book_id=book.id, user_id=session['user_id'], review=review_text, rating=rating)
+        db.session.add(new_review)
+        db.session.commit()
+        return redirect(url_for('biblioteca'))
+    return render_template("add_review.html", book=book)
+
+@app.route('/view_reviews/<int:book_id>')
+def view_reviews(book_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    book = Book.query.get(book_id)
+    reviews = BookReview.query.filter_by(book_id=book_id).all()
+    return render_template("view_reviews.html", book=book, reviews=reviews)
+
+if __name__ == "__main__":
+    app.run(debug=True)

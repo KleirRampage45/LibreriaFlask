@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 authors = ["Gerson Gaete <gersongaete@gmail.com>"]
-authors = ["Jose Estigarribia <asd@gmail.com>"]
+authors = ["Jose Estigarribia <estigarribiajose064@gmail.com>"]
 authors = ["Matias Ramirez <asd@gmail.com>"]
 authors = ["Jose Fretes <asd@gmail.com>"]
 name = "Libreria"

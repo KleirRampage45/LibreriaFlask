@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Préstamos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Préstamos</h1>
+    {% if loans %}
+    <table>
+        <thead>
+            <tr>
+                <th>Libro</th>
+                <th>Usuario</th>
+                <th>Fecha de Préstamo</th>
+                <th>Fecha de Devolución</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+            <tr>
+                <td>{{ loan.book.title }}</td>
+                <td>{{ loan.user.username }}</td>
+                <td>{{ loan.loan_date }}</td>
+                <td>{{ loan.return_date }}</td>
+                <td>{{ loan.status }}</td>
+                <td>
+                    <a href="{{ url_for('return_book', loan_id=loan.id) }}" class="btn btn-success">Devolver</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay préstamos registrados.</p>
+    {% endif %}
+</div>
+{% endblock %}

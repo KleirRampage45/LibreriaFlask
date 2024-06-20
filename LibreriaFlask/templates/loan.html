@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Prestar Libro{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Prestar "{{ book.title }}"</h1>
+    <form method="POST">
+        <label for="return_date">Fecha de Devolución</label>
+        <input type="date" id="return_date" name="return_date" required>
+        <button type="submit" class="btn btn-primary">Prestar Libro</button>
+    </form>
+</div>
+{% endblock %}
