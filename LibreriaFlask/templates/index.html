@@ -1,3 +1,140 @@
+
+{% extends "base.html" %}
+
+{% block title %}Mi Biblioteca{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Mi Biblioteca</h1>
+    <form method="GET" action="{{ url_for('biblioteca') }}" class="form-inline mb-4">
+        <input type="text" name="search" placeholder="Buscar libro..." value="{{ request.args.get('search', '') }}" class="form-control mr-2">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+    {% if books == [] %}
+    <p>La biblioteca está vacía</p>
+    {% else %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Género</th>
+                <th>Calificación</th>
+                <th>Año</th>
+                <th>Editorial</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book.title }}</td>
+                <td>{{ book.author.name }}</td>
+                <td>{{ book.genre.name }}</td>
+                <td>{{ book.rating }}</td>
+                <td>{{ book.year }}</td>
+                <td>{{ book.publisher.name }}</td>
+                <td>
+                    <a href="{{ url_for('edit_book', id=book.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{{ url_for('delete_book', id=book.id) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                    <a href="{{ url_for('loan_book', book_id=book.id) }}" class="btn btn-info btn-sm">Prestar</a>
+                    <a href="{{ url_for('add_review', book_id=book.id) }}" class="btn btn-success btn-sm">Reseñar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    <a class="btn btn-primary" href="{{ url_for('add') }}">Agregar Nuevo Libro</a>
+</div>
+{% endblock %}
+=======
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        p {
+            text-align: center;
+            color: #666;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        li a {
+            color: #007BFF;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        li a:hover {
+            text-decoration: underline;
+        }
+        .add-book {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .add-book:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Library</h1>
+        {% if books == [] %}
+        <p><strong>Library is Empty</strong></p>
+        {% else %}
+        <ul>
+            {% for book in books %}
+            <li>
+                <strong>
+                    <a href="{{ url_for('delete_book', id=book.id) }}">Borrar Libro</a>
+                    {{ book }}
+                    <a href="{{ url_for('edit_rating', id=book.id) }}">Editar Calificacion</a>
+                </strong>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <a class="add-book" href="{{ url_for('add') }}">Agregar Libro nuevo</a>
+    </div>
+</body>
+</html>
+
 {% extends "base.html" %}
 
 {% block title %}Biblioteca{% endblock %}
