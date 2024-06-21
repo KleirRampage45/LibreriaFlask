@@ -5,19 +5,16 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///biblioteca.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'supersecretkey'
+app.secret_key = 'supersecretkey'  # Cambia esto por una clave secreta más segura
 db = SQLAlchemy(app)
 
-# Define models
-class Book(db.Model):
+class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(250), unique=True, nullable=False)
-    author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
-    genre_id = db.Column(db.Integer, db.ForeignKey('genre.id'), nullable=False)
-    rating = db.Column(db.String(250), nullable=False)
-    year = db.Column(db.Integer, nullable=False)
-    publisher_id = db.Column(db.Integer, db.ForeignKey('publisher.id'), nullable=False)
-    publisher = db.relationship('Publisher', backref='published_books')
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+    profile = db.Column(db.String(50), nullable=False)
+    loans = db.relationship('Loan', backref='loan_user', lazy=True)  # Renombrar el backref
 
 class Author(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,19 +26,25 @@ class Author(db.Model):
     book_count = db.Column(db.Integer, default=0)
     books = db.relationship('Book', backref='author', lazy=True)
 
+class Book(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(250), unique=True, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
+    genre_id = db.Column(db.Integer, db.ForeignKey('genre.id'), nullable=False)
+    rating = db.Column(db.String(250), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    publisher_id = db.Column(db.Integer, db.ForeignKey('publisher.id'), nullable=False)
+    publisher = db.relationship('Publisher', backref='published_books')
+
+class Publisher(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), unique=True, nullable=False)
+
 class Genre(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), unique=True, nullable=False)
     books = db.relationship('Book', backref='genre', lazy=True)
     authors = db.relationship('Author', backref='genre', lazy=True)
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-    profile = db.Column(db.String(50), nullable=False)
-    loans = db.relationship('Loan', backref='user', lazy=True)
 
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -50,17 +53,8 @@ class Loan(db.Model):
     loan_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     return_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(50), nullable=False)
-
-    def __init__(self, book_id, user_id, return_date):
-        self.book_id = book_id
-        self.user_id = user_id
-        self.loan_date = datetime.utcnow()
-        self.return_date = return_date
-        self.status = "A tiempo" if return_date >= datetime.utcnow() else "Vencido"
-
-class Publisher(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), unique=True, nullable=False)
+    book = db.relationship('Book', backref='loans')
+    user = db.relationship('User', backref='user_loans')  # Renombrar el backref para evitar conflicto
 
 class BookReview(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -201,8 +195,7 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        profile = request.form['profile']
-        new_user = User(username=username, email=email, password=password, profile=profile)
+        new_user = User(username=username, email=email, password=password, profile='Lectura')
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('login'))
@@ -283,20 +276,18 @@ def register_author():
 def add_review(book_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    book = Book.query.get(book_id)
     if request.method == "POST":
+        rating = request.form['rating']
         review = request.form['review']
-        rating = int(request.form['rating'])
-        new_review = BookReview(book_id=book_id, user_id=session['user_id'], review=review, rating=rating)
+        new_review = BookReview(book_id=book_id, user_id=session['user_id'], rating=rating, review=review)
         db.session.add(new_review)
         db.session.commit()
         return redirect(url_for('view_reviews', book_id=book_id))
-    book = Book.query.get(book_id)
     return render_template("add_review.html", book=book)
 
 @app.route('/view_reviews/<int:book_id>')
 def view_reviews(book_id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
     book = Book.query.get(book_id)
     reviews = BookReview.query.filter_by(book_id=book_id).all()
     return render_template("view_reviews.html", book=book, reviews=reviews)
@@ -304,5 +295,3 @@ def view_reviews(book_id):
 if __name__ == "__main__":
     app.run(debug=True)
 
-
-   
