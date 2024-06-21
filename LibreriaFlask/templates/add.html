@@ -4,64 +4,41 @@
 
 {% block content %}
 <div class="container">
-    <h1>Agregar Libro</h1>
-    <form method="POST">
-        <label for="title">Título</label>
-        <input type="text" id="title" name="title" required>
-
-        <label for="author">Autor</label>
-        <select id="author" name="author">
-            {% for author in authors %}
-            <option value="{{ author.id }}">{{ author.name }}</option>
-            {% endfor %}
-        </select>
-
-        <label for="genre">Género</label>
-        <select id="genre" name="genre">
-            {% for genre in genres %}
-            <option value="{{ genre.id }}">{{ genre.name }}</option>
-            {% endfor %}
-        </select>
-
-        <label for="rating">Calificación</label>
-        <input type="text" id="rating" name="rating" required>
-
-        <label for="year">Año</label>
-        <input type="text" id="year" name="year" required>
-
-        <label for="publisher">Editorial</label>
-        <input type="text" id="publisher" name="publisher" required>
-
-        <button type="submit" class="btn blue">Agregar Libro</button>
+    <h1 class="mt-4">Agregar Nuevo Libro</h1>
+    <form method="POST" action="{{ url_for('add') }}">
+        <div class="form-group">
+            <label for="title">Título</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="author">Autor</label>
+            <select class="form-control" id="author" name="author" required>
+                {% for author in authors %}
+                    <option value="{{ author.id }}">{{ author.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="genre">Género</label>
+            <select class="form-control" id="genre" name="genre" required>
+                {% for genre in genres %}
+                    <option value="{{ genre.id }}">{{ genre.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="rating">Calificación</label>
+            <input type="text" class="form-control" id="rating" name="rating" required>
+        </div>
+        <div class="form-group">
+            <label for="year">Año</label>
+            <input type="number" class="form-control" id="year" name="year" required>
+        </div>
+        <div class="form-group">
+            <label for="publisher">Editorial</label>
+            <input type="text" class="form-control" id="publisher" name="publisher" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Agregar</button>
     </form>
 </div>
-<style>
-    .container {
-        max-width: 600px;
-        margin: auto;
-        padding: 20px;
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    form {
-        display: flex;
-        flex-direction: column;
-    }
-    label, input, select, button {
-        margin-bottom: 15px;
-    }
-    button {
-        align-self: flex-end;
-        padding: 10px 20px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: #0056b3;
-    }
-</style>
 {% endblock %}

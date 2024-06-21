@@ -5,9 +5,10 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///biblioteca.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'supersecretkey'  # Cambia esto por una clave secreta más segura
+app.secret_key = 'supersecretkey'
 db = SQLAlchemy(app)
 
+# Define models
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), unique=True, nullable=False)
@@ -17,16 +18,6 @@ class Book(db.Model):
     year = db.Column(db.Integer, nullable=False)
     publisher_id = db.Column(db.Integer, db.ForeignKey('publisher.id'), nullable=False)
     publisher = db.relationship('Publisher', backref='published_books')
-
-class BookReview(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    review = db.Column(db.Text, nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    book = db.relationship('Book', backref='reviews')
-    user = db.relationship('User', backref='reviews')
 
 class Author(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -71,6 +62,16 @@ class Publisher(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), unique=True, nullable=False)
 
+class BookReview(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    review = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    book = db.relationship('Book', backref='reviews')
+    user = db.relationship('User', backref='reviews')
+
 # Crear todas las tablas definidas en la base de datos
 db.create_all()
 
@@ -92,50 +93,23 @@ for genre_name in default_genres:
         db.session.add(new_genre)
 db.session.commit()
 
-# Agregar un libro por defecto si no hay libros
-if not Book.query.first():
-    # Crear o obtener un autor por defecto
-    default_author = Author.query.filter_by(name='Autor Desconocido').first()
-    if not default_author:
-        default_author = Author(name='Autor Desconocido', nationality='Desconocida', birth_date=datetime(1970, 1, 1), gender='Desconocido', genre_id=1)
-        db.session.add(default_author)
-        db.session.commit()
-
-    # Crear o obtener una editorial por defecto
-    default_publisher = Publisher.query.filter_by(name='Editorial Desconocida').first()
-    if not default_publisher:
-        default_publisher = Publisher(name='Editorial Desconocida')
-        db.session.add(default_publisher)
-        db.session.commit()
-
-    # Crear el libro por defecto
-    default_book = Book(
-        title='Libro de Ejemplo',
-        author_id=default_author.id,
-        genre_id=1,  # Asumiendo que el primer género es 'Novela'
-        rating='5',
-        year=2000,
-        publisher_id=default_publisher.id
-    )
-    db.session.add(default_book)
-    db.session.commit()
-
 @app.route('/')
 def home():
     if 'user_id' in session:
         user = User.query.get(session['user_id'])
         if user.profile == 'Administrador':
-            return render_template("inicio.html", user=user)
+            return render_template("inicio.html")
         else:
             return redirect(url_for('inicio_lectura'))
     return redirect(url_for('login'))
 
 @app.route('/inicio_lectura')
 def inicio_lectura():
-    if 'user_id' in session:
-        user = User.query.get(session['user_id'])
-        if user.profile == 'Lectura':
-            return render_template("inicio_lectura.html")
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    if user.profile == 'Lectura':
+        return render_template("inicio_lectura.html")
     return redirect(url_for('home'))
 
 @app.route('/biblioteca')
@@ -309,14 +283,14 @@ def register_author():
 def add_review(book_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    book = Book.query.get(book_id)
     if request.method == "POST":
-        review_text = request.form['review']
-        rating = request.form['rating']
-        new_review = BookReview(book_id=book.id, user_id=session['user_id'], review=review_text, rating=rating)
+        review = request.form['review']
+        rating = int(request.form['rating'])
+        new_review = BookReview(book_id=book_id, user_id=session['user_id'], review=review, rating=rating)
         db.session.add(new_review)
         db.session.commit()
-        return redirect(url_for('biblioteca'))
+        return redirect(url_for('view_reviews', book_id=book_id))
+    book = Book.query.get(book_id)
     return render_template("add_review.html", book=book)
 
 @app.route('/view_reviews/<int:book_id>')
@@ -329,3 +303,6 @@ def view_reviews(book_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+   

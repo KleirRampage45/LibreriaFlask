@@ -4,9 +4,11 @@
 
 {% block content %}
 <div class="container">
-    <h1>Préstamos</h1>
-    {% if loans %}
-    <table>
+    <h1 class="mt-4">Préstamos</h1>
+    {% if loans == [] %}
+    <p>No hay préstamos registrados</p>
+    {% else %}
+    <table class="table table-striped">
         <thead>
             <tr>
                 <th>Libro</th>
@@ -22,18 +24,18 @@
             <tr>
                 <td>{{ loan.book.title }}</td>
                 <td>{{ loan.user.username }}</td>
-                <td>{{ loan.loan_date }}</td>
-                <td>{{ loan.return_date }}</td>
+                <td>{{ loan.loan_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ loan.return_date.strftime('%Y-%m-%d') }}</td>
                 <td>{{ loan.status }}</td>
                 <td>
-                    <a href="{{ url_for('return_book', loan_id=loan.id) }}" class="btn btn-success">Devolver</a>
+                    {% if loan.status != 'Devuelto' %}
+                    <a href="{{ url_for('return_book', loan_id=loan.id) }}" class="btn btn-success btn-sm">Devolver</a>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    {% else %}
-    <p>No hay préstamos registrados.</p>
     {% endif %}
 </div>
 {% endblock %}

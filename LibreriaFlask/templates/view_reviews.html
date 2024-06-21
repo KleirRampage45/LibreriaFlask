@@ -1,21 +1,34 @@
 {% extends "base.html" %}
 
-{% block title %}Ver Reseñas{% endblock %}
+{% block title %}Reseñas de {{ book.title }}{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>Reseñas para "{{ book.title }}"</h1>
-    {% if reviews %}
-    <ul>
-        {% for review in reviews %}
-        <li>
-            <strong>{{ review.user.username }}</strong>: {{ review.review }} ({{ review.rating }}/10)
-            <br><small>{{ review.timestamp }}</small>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
+    <h1 class="mt-4">Reseñas de {{ book.title }}</h1>
+    {% if reviews == [] %}
     <p>No hay reseñas para este libro.</p>
+    {% else %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Calificación</th>
+                <th>Reseña</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in reviews %}
+            <tr>
+                <td>{{ review.user.username }}</td>
+                <td>{{ review.rating }}</td>
+                <td>{{ review.review }}</td>
+                <td>{{ review.timestamp.strftime('%Y-%m-%d') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% endif %}
+    <a class="btn btn-primary" href="{{ url_for('add_review', book_id=book.id) }}">Agregar Reseña</a>
 </div>
 {% endblock %}

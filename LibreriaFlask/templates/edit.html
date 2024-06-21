@@ -4,64 +4,41 @@
 
 {% block content %}
 <div class="container">
-    <h1>Editar Libro</h1>
-    <form method="POST">
-        <label for="title">Título</label>
-        <input type="text" id="title" name="title" value="{{ book.title }}" required>
-
-        <label for="author">Autor</label>
-        <select id="author" name="author">
-            {% for author in authors %}
-            <option value="{{ author.id }}" {% if author.id == book.author_id %}selected{% endif %}>{{ author.name }}</option>
-            {% endfor %}
-        </select>
-
-        <label for="genre">Género</label>
-        <select id="genre" name="genre">
-            {% for genre in genres %}
-            <option value="{{ genre.id }}" {% if genre.id == book.genre_id %}selected{% endif %}>{{ genre.name }}</option>
-            {% endfor %}
-        </select>
-
-        <label for="rating">Calificación</label>
-        <input type="text" id="rating" name="rating" value="{{ book.rating }}" required>
-
-        <label for="year">Año</label>
-        <input type="text" id="year" name="year" value="{{ book.year }}" required>
-
-        <label for="publisher">Editorial</label>
-        <input type="text" id="publisher" name="publisher" value="{{ book.publisher.name }}" required>
-
-        <button type="submit" class="btn blue">Actualizar Libro</button>
+    <h1 class="mt-4">Editar Libro</h1>
+    <form method="POST" action="{{ url_for('edit_book', id=book.id) }}">
+        <div class="form-group">
+            <label for="title">Título</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{ book.title }}" required>
+        </div>
+        <div class="form-group">
+            <label for="author">Autor</label>
+            <select class="form-control" id="author" name="author" required>
+                {% for author in authors %}
+                    <option value="{{ author.id }}" {% if author.id == book.author_id %}selected{% endif %}>{{ author.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="genre">Género</label>
+            <select class="form-control" id="genre" name="genre" required>
+                {% for genre in genres %}
+                    <option value="{{ genre.id }}" {% if genre.id == book.genre_id %}selected{% endif %}>{{ genre.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="rating">Calificación</label>
+            <input type="text" class="form-control" id="rating" name="rating" value="{{ book.rating }}" required>
+        </div>
+        <div class="form-group">
+            <label for="year">Año</label>
+            <input type="number" class="form-control" id="year" name="year" value="{{ book.year }}" required>
+        </div>
+        <div class="form-group">
+            <label for="publisher">Editorial</label>
+            <input type="text" class="form-control" id="publisher" name="publisher" value="{{ book.publisher.name }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
     </form>
 </div>
-<style>
-    .container {
-        max-width: 600px;
-        margin: auto;
-        padding: 20px;
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    form {
-        display: flex;
-        flex-direction: column;
-    }
-    label, input, select, button {
-        margin-bottom: 15px;
-    }
-    button {
-        align-self: flex-end;
-        padding: 10px 20px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer.
-    }
-    button:hover {
-        background-color: #0056b3;
-    }
-</style>
 {% endblock %}

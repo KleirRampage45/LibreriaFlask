@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Biblioteca{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,6 +22,7 @@
             overflow-x: hidden;
             transition: 0.5s;
             padding-top: 60px;
+            display: block;
         }
         .sidebar a {
             padding: 10px 15px;
@@ -64,45 +66,6 @@
             display: inline-block;
             font-size: 16px;
         }
-        .btn-primary {
-            background-color: #007bff;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-        .btn-warning {
-            background-color: #ffc107;
-        }
-        .btn-warning:hover {
-            background-color: #e0a800;
-        }
-        .btn-info {
-            background-color: #17a2b8;
-        }
-        .btn-info:hover {
-            background-color: #138496;
-        }
-        .btn-success {
-            background-color: #28a745;
-        }
-        .btn-success:hover {
-            background-color: #218838;
-        }
-        .btn-danger {
-            background-color: #dc3545;
-        }
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-        .btn-black {
-            background-color: #343a40;
-        }
-        .btn-black:hover {
-            background-color: #23272b;
-        }
-        .container {
-            margin: 20px;
-        }
     </style>
 </head>
 <body>
@@ -116,7 +79,6 @@
         <a href="{{ url_for('register_author') }}">Registrar Autor</a>
         <a href="{{ url_for('register') }}">Registrar Usuario</a>
     {% endif %}
-    <a href="{{ url_for('view_reviews', book_id=1) }}">Reseñas</a>
     <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
 </div>
 

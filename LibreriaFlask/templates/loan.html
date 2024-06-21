@@ -4,11 +4,13 @@
 
 {% block content %}
 <div class="container">
-    <h1>Prestar "{{ book.title }}"</h1>
-    <form method="POST">
-        <label for="return_date">Fecha de Devolución</label>
-        <input type="date" id="return_date" name="return_date" required>
-        <button type="submit" class="btn btn-primary">Prestar Libro</button>
+    <h1 class="mt-4">Prestar Libro: {{ book.title }}</h1>
+    <form method="POST" action="{{ url_for('loan_book', book_id=book.id) }}">
+        <div class="form-group">
+            <label for="return_date">Fecha de Devolución</label>
+            <input type="date" class="form-control" id="return_date" name="return_date" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Prestar</button>
     </form>
 </div>
 {% endblock %}

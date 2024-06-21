@@ -4,28 +4,37 @@
 
 {% block content %}
 <div class="container">
-    <h1>Registrar Autor</h1>
-    <form method="POST">
-        <label for="name">Nombre</label>
-        <input type="text" id="name" name="name" required>
-
-        <label for="nationality">Nacionalidad</label>
-        <input type="text" id="nationality" name="nationality" required>
-
-        <label for="birth_date">Fecha de Nacimiento</label>
-        <input type="date" id="birth_date" name="birth_date" required>
-
-        <label for="gender">Género</label>
-        <input type="text" id="gender" name="gender" required>
-
-        <label for="genre">Género Literario</label>
-        <select id="genre" name="genre">
-            {% for genre in genres %}
-            <option value="{{ genre.id }}">{{ genre.name }}</option>
-            {% endfor %}
-        </select>
-
-        <button type="submit" class="btn btn-primary">Registrar Autor</button>
+    <h1 class="mt-4">Registrar Autor</h1>
+    <form method="POST" action="{{ url_for('register_author') }}">
+        <div class="form-group">
+            <label for="name">Nombre</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="nationality">Nacionalidad</label>
+            <input type="text" class="form-control" id="nationality" name="nationality" required>
+        </div>
+        <div class="form-group">
+            <label for="birth_date">Fecha de Nacimiento</label>
+            <input type="date" class="form-control" id="birth_date" name="birth_date" required>
+        </div>
+        <div class="form-group">
+            <label for="gender">Género</label>
+            <select class="form-control" id="gender" name="gender" required>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="genre">Género Literario</label>
+            <select class="form-control" id="genre" name="genre" required>
+                {% for genre in genres %}
+                    <option value="{{ genre.id }}">{{ genre.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrar</button>
     </form>
 </div>
 {% endblock %}
