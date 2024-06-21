@@ -1,99 +1,24 @@
-<<<<<<<<< Temporary merge branch 1
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Usuario</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 20px 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            margin: auto;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        form {
-            margin-top: 20px;
-        }
-        label, input {
-            display: block;
-            margin-bottom: 10px;
-        }
-        input[type="submit"] {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Registro de Nuevo Usuario</h1>
-        <form action="{{ url_for('register') }}" method="POST">
+{% extends "base.html" %}
+
+{% block title %}Registrar Usuario{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Registrar Usuario</h1>
+    <form action="{{ url_for('register') }}" method="POST" class="mt-4">
+        <div class="form-group">
             <label for="username">Nombre de Usuario:</label>
-            <input type="text" id="username" name="username" required>
-
+            <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+        <div class="form-group">
             <label for="email">Correo Electrónico:</label>
-            <input type="email" id="email" name="email" required>
-
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="form-group">
             <label for="password">Contraseña:</label>
-            <input type="password" id="password" name="password" required>
-
-            <input type="submit" value="Registrarse">
-        </form>
-    </div>
-</body>
-</html>
-=========
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Usuario</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container">
-        <h1 class="mt-5">Registrar Usuario</h1>
-        <form action="{{ url_for('register') }}" method="POST">
-            <div class="form-group">
-                <label for="username">Nombre de Usuario:</label>
-                <input type="text" class="form-control" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Correo Electrónico:</label>
-                <input type="email" class="form-control" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Contraseña:</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Registrarse</button>
-        </form>
-    </div>
-</body>
-</html>
->>>>>>>>> Temporary merge branch 2
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Registrarse</button>
+    </form>
+</div>
+{% endblock %}
