@@ -1,26 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Mi Biblioteca{% endblock %}
+{% block title %}Biblioteca{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="mt-4">Mi Biblioteca</h1>
-    <form method="GET" action="{{ url_for('biblioteca') }}" class="form-inline mb-4">
-        <input type="text" name="search" placeholder="Buscar libro..." value="{{ request.args.get('search', '') }}" class="form-control mr-2">
-        <button type="submit" class="btn btn-primary">Buscar</button>
+<div class="container mt-5">
+    <h1 class="text-center">Biblioteca</h1>
+    <form class="form-inline my-4">
+        <input class="form-control mr-sm-2" type="search" placeholder="Buscar libro" aria-label="Buscar" name="search">
+        <button class="btn btn-success my-2 my-sm-0" type="submit">Buscar</button>
     </form>
-    {% if books == [] %}
-    <p>La biblioteca está vacía</p>
-    {% else %}
     <table class="table table-striped">
         <thead>
             <tr>
                 <th>Título</th>
                 <th>Autor</th>
                 <th>Género</th>
-                <th>Calificación</th>
                 <th>Año</th>
                 <th>Editorial</th>
+                <th>Calificación</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -30,20 +27,19 @@
                 <td>{{ book.title }}</td>
                 <td>{{ book.author.name }}</td>
                 <td>{{ book.genre.name }}</td>
-                <td>{{ book.rating }}</td>
                 <td>{{ book.year }}</td>
                 <td>{{ book.publisher.name }}</td>
+                <td>{{ book.rating }}</td>
                 <td>
-                    <a href="{{ url_for('edit_book', id=book.id) }}" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="{{ url_for('delete_book', id=book.id) }}" class="btn btn-danger btn-sm">Eliminar</a>
-                    <a href="{{ url_for('loan_book', book_id=book.id) }}" class="btn btn-info btn-sm">Prestar</a>
-                    <a href="{{ url_for('add_review', book_id=book.id) }}" class="btn btn-success btn-sm">Reseñar</a>
+                    <a href="{{ url_for('edit_book', id=book.id) }}" class="btn btn-warning btn-sm btn-action">Editar</a>
+                    <a href="{{ url_for('delete_book', id=book.id) }}" class="btn btn-danger btn-sm btn-action">Eliminar</a>
+                    <a href="{{ url_for('loan_book', book_id=book.id) }}" class="btn btn-success btn-sm btn-action">Prestar</a>
+                    <a href="{{ url_for('add_review', book_id=book.id) }}" class="btn btn-info btn-sm btn-action">Reseñar</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    {% endif %}
-    <a class="btn btn-primary" href="{{ url_for('add') }}">Agregar Nuevo Libro</a>
 </div>
 {% endblock %}
+

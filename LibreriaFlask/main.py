@@ -14,7 +14,7 @@ class User(db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     profile = db.Column(db.String(50), nullable=False)
-    loans = db.relationship('Loan', backref='loan_user', lazy=True)  # Renombrar el backref
+    loans = db.relationship('Loan', backref='loan_user', lazy=True)
 
 class Author(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -52,9 +52,9 @@ class Loan(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     loan_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     return_date = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(50), nullable=False, default='A tiempo')
     book = db.relationship('Book', backref='loans')
-    user = db.relationship('User', backref='user_loans')  # Renombrar el backref para evitar conflicto
+    user = db.relationship('User', backref='user_loans')
 
 class BookReview(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -212,12 +212,13 @@ def login():
             session['profile'] = user.profile
             return redirect(url_for('home'))
         else:
-            return "Usuario o contraseña incorrectos"
+            return "Usuario o contraseña incorrectos. Si necesitas acceso como Administrador, usa el correo estigarribiajose064@gmail.com y la contraseña: password"
     return render_template("login.html")
 
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
+    session.pop('profile', None)
     return redirect(url_for('login'))
 
 @app.route('/loan/<int:book_id>', methods=["GET", "POST"])
