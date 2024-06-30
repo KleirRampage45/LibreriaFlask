@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Eventos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Eventos Programados</h1>
+    {% if session.get('profile') == 'Administrador' %}
+        <a href="{{ url_for('add_event') }}" class="btn btn-primary mb-3">Crear Nuevo Evento</a>
+    {% endif %}
+    <div class="list-group">
+        {% for event in events %}
+        <a href="#" class="list-group-item list-group-item-action">
+            <h5 class="mb-1">{{ event.name }}</h5>
+            <p class="mb-1">{{ event.description }}</p>
+            <small>Fecha: {{ event.event_date.strftime('%Y-%m-%d %H:%M') }} - Lugar: {{ event.location }}</small>
+        </a>
+        {% else %}
+        <p>No hay eventos programados.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

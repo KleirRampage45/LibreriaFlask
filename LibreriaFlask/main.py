@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///biblioteca.db'
@@ -8,13 +9,24 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'supersecretkey'  # Cambia esto por una clave secreta más segura
 db = SQLAlchemy(app)
 
+# Modelos
 class User(db.Model):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     profile = db.Column(db.String(50), nullable=False)
-    loans = db.relationship('Loan', backref='loan_user', lazy=True)
+    loans = db.relationship('Loan', back_populates='user', lazy=True)
+
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    event_date = db.Column(db.DateTime, nullable=False)
+    location = db.Column(db.String(250), nullable=False)
+    capacity = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(50), default='Scheduled')
 
 class Author(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,6 +39,7 @@ class Author(db.Model):
     books = db.relationship('Book', backref='author', lazy=True)
 
 class Book(db.Model):
+    __tablename__ = 'book'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), unique=True, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
@@ -35,6 +48,7 @@ class Book(db.Model):
     year = db.Column(db.Integer, nullable=False)
     publisher_id = db.Column(db.Integer, db.ForeignKey('publisher.id'), nullable=False)
     publisher = db.relationship('Publisher', backref='published_books')
+    loans = db.relationship('Loan', back_populates='book', lazy=True)
 
 class Publisher(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -47,14 +61,29 @@ class Genre(db.Model):
     authors = db.relationship('Author', backref='genre', lazy=True)
 
 class Loan(db.Model):
+    __tablename__ = 'loan'
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    loan_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    return_date = db.Column(db.DateTime, nullable=False)
+    loan_date = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    return_date = db.Column(db.DateTime)
     status = db.Column(db.String(50), nullable=False, default='A tiempo')
-    book = db.relationship('Book', backref='loans')
-    user = db.relationship('User', backref='user_loans')
+    
+    fine = db.relationship('Fine', uselist=False, back_populates='loan')
+    book = db.relationship('Book', back_populates='loans')
+    user = db.relationship('User', back_populates='loans')
+
+
+class Fine(db.Model):
+    __tablename__ = 'fine'
+    id = db.Column(db.Integer, primary_key=True)
+    loan_id = db.Column(db.Integer, db.ForeignKey('loan.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    due_date = db.Column(db.DateTime)
+    paid = db.Column(db.Boolean, default=False)
+    payment_date = db.Column(db.DateTime)
+    
+    loan = db.relationship('Loan', back_populates='fine')
 
 class BookReview(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,6 +115,7 @@ for genre_name in default_genres:
         new_genre = Genre(name=genre_name)
         db.session.add(new_genre)
 db.session.commit()
+
 
 @app.route('/')
 def home():
@@ -227,14 +257,17 @@ def loan_book(book_id):
         return redirect(url_for('login'))
     book = Book.query.get(book_id)
     if request.method == "POST":
-        return_date = datetime.strptime(request.form['return_date'], '%Y-%m-%d')
-        if return_date > datetime.utcnow() + timedelta(days=30):
+        return_date = datetime.strptime(request.form['return_date'], '%Y-%m-%d').replace(tzinfo=timezone.utc)
+        if return_date > datetime.now(timezone.utc) + timedelta(days=30):
             return "La fecha de devolución no puede ser mayor a un mes desde hoy."
-        new_loan = Loan(book_id=book_id, user_id=session['user_id'], return_date=return_date)
+        
+        new_loan = Loan(book_id=book_id, user_id=session['user_id'], return_date=return_date, status='A tiempo')
         db.session.add(new_loan)
         db.session.commit()
+
         return redirect(url_for('home'))
     return render_template("loan.html", book=book)
+
 
 @app.route('/loans')
 def loans():
@@ -247,13 +280,28 @@ def loans():
         all_loans = Loan.query.filter_by(user_id=user.id).all()
     return render_template("loans.html", loans=all_loans)
 
-@app.route('/return_book/<int:loan_id>')
-def return_book(loan_id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
+
+def calculate_fine(loan_id):
     loan = Loan.query.get(loan_id)
-    loan.status = 'Devuelto'
-    db.session.commit()
+    if not loan:
+        return "Préstamo no encontrado", False
+
+    if loan.return_date < datetime.utcnow():
+        days_late = (datetime.utcnow() - loan.return_date).days
+        fine_amount = days_late * 1000  # 1000 guaraníes por cada día de retraso
+        fine = Fine(loan_id=loan_id, amount=fine_amount, due_date=datetime.utcnow())
+        db.session.add(fine)
+        db.session.commit()
+        return f"Se ha generado una multa de {fine_amount} guaraníes.", True
+    return "No hay multa.", False
+
+@app.route('/return_book/<int:loan_id>', methods=['POST'])
+def return_book(loan_id):
+    message, success = calculate_fine(loan_id)
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'info')
     return redirect(url_for('loans'))
 
 @app.route('/register_author', methods=["GET", "POST"])
@@ -292,6 +340,52 @@ def view_reviews(book_id):
     book = Book.query.get(book_id)
     reviews = BookReview.query.filter_by(book_id=book_id).all()
     return render_template("view_reviews.html", book=book, reviews=reviews)
+
+@app.route('/events')
+def events():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    all_events = Event.query.order_by(Event.event_date.desc()).all()
+    return render_template('events.html', events=all_events)
+
+@app.route('/add_event', methods=['GET', 'POST'])
+def add_event():
+    if 'user_id' not in session or session.get('profile') != 'Administrador':
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        new_event = Event(
+            name=request.form['nombre_evento'],
+            description=request.form['descripcion'],
+            event_date=datetime.strptime(request.form['fecha_evento'], '%Y-%m-%dT%H:%M').replace(tzinfo=timezone.utc),
+            location=request.form['lugar'],
+            capacity=int(request.form['capacidad'])
+        )
+        db.session.add(new_event)
+        db.session.commit()
+        return redirect(url_for('events'))
+    return render_template('add_event.html')
+
+@app.route('/fines')
+def fines():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if session.get('profile') == 'Administrador':
+        all_fines = Fine.query.all()
+    else:
+        user_id = session.get('user_id')
+        all_fines = Fine.query.join(Loan).filter(Loan.user_id == user_id).all()
+    return render_template('fines.html', fines=all_fines)
+
+@app.route('/add_fine', methods=['POST'])
+def add_fine():
+    new_fine = Fine(
+        loan_id=int(request.form['loan_id']),
+        amount=float(request.form['amount']),
+        due_date=datetime.strptime(request.form['due_date'], '%Y-%m-%d')
+    )
+    db.session.add(new_fine)
+    db.session.commit()
+    return redirect(url_for('fines'))
 
 if __name__ == "__main__":
     app.run(debug=True)

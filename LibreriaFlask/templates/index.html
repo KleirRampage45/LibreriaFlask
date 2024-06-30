@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-5">
     <h1 class="text-center">Biblioteca</h1>
-    <form class="form-inline my-4">
+    <form class="form-inline my-4" action="{{ url_for('biblioteca') }}" method="get">
         <input class="form-control mr-sm-2" type="search" placeholder="Buscar libro" aria-label="Buscar" name="search">
         <button class="btn btn-success my-2 my-sm-0" type="submit">Buscar</button>
     </form>
@@ -31,10 +31,18 @@
                 <td>{{ book.publisher.name }}</td>
                 <td>{{ book.rating }}</td>
                 <td>
-                    <a href="{{ url_for('edit_book', id=book.id) }}" class="btn btn-warning btn-sm btn-action">Editar</a>
-                    <a href="{{ url_for('delete_book', id=book.id) }}" class="btn btn-danger btn-sm btn-action">Eliminar</a>
-                    <a href="{{ url_for('loan_book', book_id=book.id) }}" class="btn btn-success btn-sm btn-action">Prestar</a>
-                    <a href="{{ url_for('add_review', book_id=book.id) }}" class="btn btn-info btn-sm btn-action">Reseñar</a>
+                    <!-- Custom Dropdown Menu for Actions -->
+                    <div class="dropdown">
+                        <button class="dropbtn">Acciones</button>
+                        <div class="dropdown-content">
+                            <a href="{{ url_for('loan_book', book_id=book.id) }}">Prestar</a>
+                            <a href="{{ url_for('add_review', book_id=book.id) }}">Reseñar</a>
+                            {% if session['profile'] == 'Administrador' %}
+                            <a href="{{ url_for('edit_book', id=book.id) }}">Editar</a>
+                            <a href="{{ url_for('delete_book', id=book.id) }}">Eliminar</a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </td>
             </tr>
             {% endfor %}

@@ -13,18 +13,29 @@
             <a class="btn btn-secondary btn-lg" href="{{ url_for('loans') }}" style="width: 100%;">Préstamos</a>
         </div>
         <div class="col-md-4 my-2">
-            <a class="btn btn-success btn-lg" href="{{ url_for('add') }}" style="width: 100%;">Agregar Libro</a>
+            <a class="btn btn-success btn-lg" href="{{ url_for('events') }}" style="width: 100%;">Eventos</a>
         </div>
     </div>
     <div class="row">
+        {% if session['profile'] == 'Administrador' %}
         <div class="col-md-4 my-2">
-            <a class="btn btn-info btn-lg" href="{{ url_for('register_author') }}" style="width: 100%;">Registrar Autor</a>
+            <a class="btn btn-info btn-lg" href="{{ url_for('add_event') }}" style="width: 100%;">Agregar Evento</a>
         </div>
         <div class="col-md-4 my-2">
-            <a class="btn btn-warning btn-lg" href="{{ url_for('register') }}" style="width: 100%;">Registrar Usuario</a>
+            <a class="btn btn-warning btn-lg" href="{{ url_for('fines') }}" style="width: 100%;">Administrar Multas</a>
         </div>
+        {% endif %}
         <div class="col-md-4 my-2">
             <a class="btn btn-danger btn-lg" href="{{ url_for('view_reviews', book_id=1) }}" style="width: 100%;">Reseñas</a>
+        </div>
+        <div class="col-md-4 my-2">
+            <a class="btn btn-primary btn-lg" href="{{ url_for('add') }}" style="width: 100%;">Agregar Libro</a>
+        </div>
+        <div class="col-md-4 my-2">
+            <a class="btn btn-secondary btn-lg" href="{{ url_for('register_author') }}" style="width: 100%;">Registrar Autor</a>
+        </div>
+        <div class="col-md-4 my-2">
+            <a class="btn btn-success btn-lg" href="{{ url_for('register') }}" style="width: 100%;">Registrar Usuario</a>
         </div>
     </div>
 </div>

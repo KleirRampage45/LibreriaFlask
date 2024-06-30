@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Administración de Multas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Multas Pendientes</h1>
+    {% if fines %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Préstamo ID</th>
+                <th>Libro</th>
+                <th>Usuario</th>
+                <th>Monto</th>
+                <th>Fecha de Vencimiento</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fine in fines %}
+            <tr>
+                <td>{{ fine.loan_id }}</td>
+                <td>{{ fine.loan.book.title }}</td>
+                <td>{{ fine.loan.user.username }}</td>
+                <td>${{ fine.amount }}</td>
+                <td>{{ fine.due_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ 'Pagada' if fine.paid else 'Pendiente' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay multas pendientes.</p>
+    {% endif %}
+</div>
+{% endblock %}

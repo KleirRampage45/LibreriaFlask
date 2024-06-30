@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Agregar Evento{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Agregar Evento</h1>
+    <form method="POST" action="{{ url_for('add_event') }}">
+        <div class="form-group">
+            <label for="nombre_evento">Nombre del Evento</label>
+            <input type="text" class="form-control" id="nombre_evento" name="nombre_evento" required>
+        </div>
+        <div class="form-group">
+            <label for="descripcion">Descripción</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="fecha_evento">Fecha del Evento</label>
+            <input type="datetime-local" class="form-control" id="fecha_evento" name="fecha_evento" required>
+        </div>
+        <div class="form-group">
+            <label for="lugar">Lugar</label>
+            <input type="text" class="form-control" id="lugar" name="lugar" required>
+        </div>
+        <div class="form-group">
+            <label for="capacidad">Capacidad</label>
+            <input type="number" class="form-control" id="capacidad" name="capacidad" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Agregar Evento</button>
+    </form>
+</div>
+{% endblock %}

@@ -6,13 +6,16 @@
 <div class="container text-center">
     <h1 class="mt-4">Bienvenido a la Biblioteca</h1>
     <div class="row">
-        <div class="col-md-4 my-2">
+        <div class="col-md-3 my-2">
             <a class="btn btn-primary btn-lg" href="{{ url_for('biblioteca') }}" style="width: 100%;">Biblioteca</a>
         </div>
-        <div class="col-md-4 my-2">
+        <div class="col-md-3 my-2">
             <a class="btn btn-secondary btn-lg" href="{{ url_for('loans') }}" style="width: 100%;">Préstamos</a>
         </div>
-        <div class="col-md-4 my-2">
+        <div class="col-md-3 my-2">
+            <a class="btn btn-success btn-lg" href="{{ url_for('events') }}" style="width: 100%;">Eventos</a>
+        </div>
+        <div class="col-md-3 my-2">
             <a class="btn btn-danger btn-lg" href="{{ url_for('view_reviews', book_id=1) }}" style="width: 100%;">Reseñas</a>
         </div>
     </div>

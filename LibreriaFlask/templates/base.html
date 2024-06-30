@@ -66,21 +66,60 @@
             display: inline-block;
             font-size: 16px;
         }
+        /* Estilos para el menú desplegable sin Bootstrap */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropbtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {background-color: #f1f1f1}
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
     </style>
 </head>
 <body>
 
-<div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
-    <a href="{{ url_for('biblioteca') }}">Biblioteca</a>
-    <a href="{{ url_for('loans') }}">Préstamos</a>
-    {% if session['profile'] == 'Administrador' %}
-        <a href="{{ url_for('add') }}">Agregar Libro</a>
-        <a href="{{ url_for('register_author') }}">Registrar Autor</a>
-        <a href="{{ url_for('register') }}">Registrar Usuario</a>
-    {% endif %}
-    <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
-</div>
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
+        <a href="{{ url_for('home') }}">Inicio</a>
+        <a href="{{ url_for('biblioteca') }}">Biblioteca</a>
+        <a href="{{ url_for('events') }}">Eventos</a>
+        <a href="{{ url_for('loans') }}">Préstamos</a>
+        <a href="{{ url_for('fines') }}">Multas</a>
+        {% if session.get('profile') == 'Administrador' %}
+            <a href="{{ url_for('add') }}">Agregar Libro</a>
+            <a href="{{ url_for('register_author') }}">Registrar Autor</a>
+            <a href="{{ url_for('register') }}">Registrar Usuario</a>
+            <a href="{{ url_for('add_event') }}">Crear Evento</a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
+    </div>
+    
 
 <div id="main">
     <button class="open-btn" onclick="openNav()">☰</button>

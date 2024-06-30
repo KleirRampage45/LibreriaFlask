@@ -16,6 +16,7 @@
                 <th>Fecha de Préstamo</th>
                 <th>Fecha de Devolución</th>
                 <th>Estado</th>
+                <th>Multa</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -27,6 +28,13 @@
                 <td>{{ loan.loan_date.strftime('%Y-%m-%d') }}</td>
                 <td>{{ loan.return_date.strftime('%Y-%m-%d') }}</td>
                 <td>{{ loan.status }}</td>
+                <td>
+                    {% if loan.fine %}
+                    ${{ loan.fine.amount }} - {{ 'Pagada' if loan.fine.paid else 'Pendiente' }}
+                    {% else %}
+                    Sin multa
+                    {% endif %}
+                </td>
                 <td>
                     {% if loan.status != 'Devuelto' %}
                     <a href="{{ url_for('return_book', loan_id=loan.id) }}" class="btn btn-success btn-sm">Devolver</a>
